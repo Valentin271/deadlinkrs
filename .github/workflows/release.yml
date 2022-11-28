@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          default: true
+          target: x86_64-unknown-linux-gnu
+          profile: minimal
+
+      - name: Unit tests
+        run: cargo test --verbose
+
+      - name: Build
+        run: cargo build --verbose --release
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: deadlinkrs-linux
+          path: ./target/release/deadlinkrs
+          if-no-files-found: 'error'
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+    steps:
+      - name: Getting version tag
+        run: "echo \"RELEASE_TAG=${GITHUB_REF#refs/tags/}\" >> $GITHUB_ENV"
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: deadlinkrs-linux
+
+      - name: Publish release
+        run: |
+          gh release create $RELEASE_TAG
+          --title "$RELEASE_TAG"
+          deadlinkrs-linux
