@@ -30,5 +30,5 @@ parsing user input, selecting files with globs, parsing files with regex, and se
 isn't exactly easy.  
 Definetly could be done, but not easy and it would take some time.
 
-So I wanted speed with Javascript / Python like high level utilities more or less our of the box.  
+So I wanted speed with Javascript / Python like high level utilities more or less out of the box.  
 What better choice than **Rust**.
