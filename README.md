@@ -1,5 +1,7 @@
 # deadlinkrs
 
+[![CI](https://github.com/Valentin271/deadlinkrs/actions/workflows/ci.yml/badge.svg)](https://github.com/Valentin271/deadlinkrs/actions/workflows/ci.yml)
+
 Search for dead links in any kind of file.
 
 # Why
