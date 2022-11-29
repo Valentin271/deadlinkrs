@@ -1,6 +1,9 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - "master"
   pull_request:
     branches:
       - "master"
@@ -18,8 +21,7 @@ jobs:
       - name: Setup rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
-          default: true
+          toolchain: stable
           target: x86_64-unknown-linux-gnu
           profile: minimal
 

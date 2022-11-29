@@ -3,7 +3,7 @@ name = "deadlinkrs"
 version = "0.1.0"
 edition = "2021"
 authors = ["Valentin DOREAU"]
-rust-version = "1.67"
+rust-version = "1.65"
 license = "GPL-3.0-only"
 description = "Search for dead links in any kind of file"
 
