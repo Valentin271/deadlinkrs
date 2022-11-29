@@ -12,4 +12,5 @@ description = "Search for dead links in any kind of file"
 [dependencies]
 clap = { version = "4.0.27", features = ["cargo"] }
 globset = "0.4.9"
+regex = "1.7.0"
 walkdir = "2.3.2"
