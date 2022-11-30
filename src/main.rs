@@ -70,7 +70,7 @@ fn main() {
                 if response.status().is_success() {
                     println!("URL {} is alive", url.as_str())
                 } else {
-                    print!("URL {} is NOT alive: {}\n", url.as_str(), response.status());
+                    println!("URL {} is NOT alive: {}", url.as_str(), response.status());
                 }
             }
         }
