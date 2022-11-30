@@ -31,8 +31,10 @@ fn main() {
 
     let globs = builder.build().unwrap();
 
-    let regex = Regex::new("(href=[\"'])?(https?://.+)[\"']?").unwrap();
-    let mut total = 0;
+    let regex = Regex::new(
+        "https?://(?:[[:alnum:]]+\\.)?[[:alnum:]]+\\.[[:alpha:]]{2,3}/?(?:[[:alnum:]]|[-$_.+!*/&?%=@,:])*",
+    )
+    .unwrap();
 
     for path in matches.get_many::<String>("path").unwrap() {
         for file in WalkDir::new(path).into_iter().filter_map(Result::ok) {
@@ -53,14 +55,11 @@ fn main() {
                 Ok(content) => content,
                 Err(_) => continue,
             };
-            let count = regex.find_iter(&content).count();
 
-            if count > 0 {
-                total += count;
-                println!("{} has {} link(s)", file.path().display(), count);
-            }
+            println!("{}", file.path().display());
+            regex
+                .find_iter(&content)
+                .for_each(|m| println!("\t{}", m.as_str()));
         }
     }
-
-    println!("{} links total", total);
 }
