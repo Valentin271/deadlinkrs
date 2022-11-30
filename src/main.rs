@@ -1,7 +1,3 @@
-extern crate clap;
-extern crate globset;
-extern crate walkdir;
-
 use clap::{arg, command};
 use globset::{GlobBuilder, GlobSetBuilder};
 use regex::Regex;
@@ -25,21 +21,26 @@ fn main() {
             GlobBuilder::new(glob)
                 .literal_separator(true)
                 .build()
-                .unwrap(),
+                .expect("Glob pattern should be correct"),
         );
     }
 
-    let globs = builder.build().unwrap();
+    let globs = builder.build().expect("Glob patterns should be correct");
 
     let regex = Regex::new(
         "https?://(?:[[:alnum:]]+\\.)?[[:alnum:]]+\\.[[:alpha:]]{2,3}/?(?:[[:alnum:]]|[-$_.+!*/&?%=@,:])*",
     )
-    .unwrap();
+    .expect("Valid regex");
 
-    for path in matches.get_many::<String>("path").unwrap() {
+    for path in matches.get_many::<String>("path").unwrap_or_default() {
         for file in WalkDir::new(path).into_iter().filter_map(Result::ok) {
-            if !file.metadata().unwrap().is_file() {
-                continue;
+            match file.metadata() {
+                Ok(m) => {
+                    if !m.is_file() {
+                        continue;
+                    }
+                }
+                Err(_) => continue,
             }
 
             if !globs.is_match(file.path()) {
