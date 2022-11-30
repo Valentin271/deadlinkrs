@@ -1,6 +1,7 @@
 use clap::{arg, command};
 use globset::{GlobBuilder, GlobSetBuilder};
 use regex::Regex;
+use reqwest::blocking::Client;
 use std::fs::read_to_string;
 use walkdir::WalkDir;
 
@@ -26,6 +27,7 @@ fn main() {
     }
 
     let globs = builder.build().expect("Glob patterns should be correct");
+    let client = Client::new();
 
     let regex = Regex::new(
         "https?://(?:[[:alnum:]]+\\.)?[[:alnum:]]+\\.[[:alpha:]]{2,3}/?(?:[[:alnum:]]|[-$_.+!*/&?%=@,:])*",
@@ -58,9 +60,19 @@ fn main() {
             };
 
             println!("{}", file.path().display());
-            regex
-                .find_iter(&content)
-                .for_each(|m| println!("\t{}", m.as_str()));
+
+            for url in regex.find_iter(&content) {
+                let response = client
+                    .get(url.as_str())
+                    .send()
+                    .expect("Request should get response");
+
+                if response.status().is_success() {
+                    println!("URL {} is alive", url.as_str())
+                } else {
+                    print!("URL {} is NOT alive: {}\n", url.as_str(), response.status());
+                }
+            }
         }
     }
 }
