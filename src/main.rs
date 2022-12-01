@@ -1,11 +1,10 @@
 use std::fs::read_to_string;
-use std::path::{Component, PathBuf};
 
 use ansi_term::Color::{Blue, Red};
 use globset::{GlobBuilder, GlobSetBuilder};
+use ignore::WalkBuilder;
 use regex::Regex;
 use reqwest::blocking::Client;
-use walkdir::WalkDir;
 
 use cli::Cli;
 
@@ -47,7 +46,13 @@ fn main() {
     .expect("Valid regex");
 
     for path in cli.path {
-        for file in WalkDir::new(path).into_iter().filter_map(Result::ok) {
+        for file in WalkBuilder::new(path)
+            .standard_filters(false)
+            .hidden(!cli.hidden)
+            .build()
+            .into_iter()
+            .filter_map(Result::ok)
+        {
             match file.metadata() {
                 Ok(m) => {
                     if !m.is_file() {
@@ -57,20 +62,11 @@ fn main() {
                 Err(_) => continue,
             }
 
-            let filepath = file
-                .path()
-                .components()
-                .filter_map(|comp| match comp {
-                    Component::CurDir | Component::ParentDir => None,
-                    _ => Some(comp),
-                })
-                .collect::<PathBuf>();
-
-            if !globs.is_match(&filepath) {
+            if !globs.is_match(file.path()) {
                 continue;
             }
 
-            if exclude_globs.is_match(&filepath) {
+            if exclude_globs.is_match(file.path()) {
                 continue;
             }
 

@@ -22,7 +22,7 @@ impl Cli {
             .arg(arg!(--dry "Extract and print URLs that should be requested but don't send requests"))
             .get_matches();
 
-        let mut out = Self {
+        Self {
             path: matches
                 .get_many::<String>("path")
                 .expect("path arguments should be valid")
@@ -46,13 +46,6 @@ impl Cli {
             hidden: matches.get_flag("hidden"),
             list: matches.get_flag("list"),
             dry: matches.get_flag("dry"),
-        };
-
-        if !out.hidden {
-            out.exclude
-                .append(&mut vec![String::from("**/.*/**"), String::from("**/.*")]);
         }
-
-        out
     }
 }
