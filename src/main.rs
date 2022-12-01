@@ -1,32 +1,42 @@
-use clap::{arg, command};
+use std::fs::read_to_string;
+
 use globset::{GlobBuilder, GlobSetBuilder};
 use regex::Regex;
 use reqwest::blocking::Client;
-use std::fs::read_to_string;
 use walkdir::WalkDir;
 
+use cli::Cli;
+
+mod cli;
+
 fn main() {
-    let matches = command!()
-        .arg(arg!([path]... "Path to look for files").default_value("."))
-        .arg(arg!(-g --glob <glob>... "Unix-style glob to filter files").default_value("**"))
-        // .arg(arg!(--exclude <glob>... "Unix-style glob to exclude from selection"))
-        // .arg(arg!(--hidden "Includes hidden files and directories"))
-        // .arg(arg!(--ignore <url>... "URL to ignore"))
-        .arg(arg!(--list "List searched files and exits"))
-        .get_matches();
+    let cli = Cli::new();
 
     let mut builder = GlobSetBuilder::new();
+    let mut exclude_builder = GlobSetBuilder::new();
 
-    for glob in matches.get_many::<String>("glob").unwrap_or_default() {
+    for glob in cli.glob {
         builder.add(
-            GlobBuilder::new(glob)
+            GlobBuilder::new(glob.as_str())
                 .literal_separator(true)
                 .build()
                 .expect("Glob pattern should be correct"),
         );
     }
 
+    for glob in cli.exclude {
+        exclude_builder.add(
+            GlobBuilder::new(glob.as_str())
+                .literal_separator(true)
+                .build()
+                .expect("Exclude glob pattern should be correct"),
+        );
+    }
+
     let globs = builder.build().expect("Glob patterns should be correct");
+    let exclude_globs = exclude_builder
+        .build()
+        .expect("Exclude glob patterns should be correct");
     let client = Client::new();
 
     let regex = Regex::new(
@@ -34,7 +44,7 @@ fn main() {
     )
     .expect("Valid regex");
 
-    for path in matches.get_many::<String>("path").unwrap_or_default() {
+    for path in cli.path {
         for file in WalkDir::new(path).into_iter().filter_map(Result::ok) {
             match file.metadata() {
                 Ok(m) => {
@@ -45,11 +55,27 @@ fn main() {
                 Err(_) => continue,
             }
 
-            if !globs.is_match(file.path()) {
+            let filepath = if file.path().starts_with("./") {
+                file.path()
+                    .strip_prefix("./")
+                    .expect("./ prefix should be stripped")
+            } else if file.path().starts_with("../") {
+                file.path()
+                    .strip_prefix("../")
+                    .expect("../ prefix should be stripped")
+            } else {
+                file.path()
+            };
+
+            if !globs.is_match(filepath) {
                 continue;
             }
 
-            if matches.get_flag("list") {
+            if exclude_globs.is_match(filepath) {
+                continue;
+            }
+
+            if cli.list {
                 println!("{}", file.path().display());
                 continue;
             }
@@ -62,6 +88,20 @@ fn main() {
             println!("{}", file.path().display());
 
             for url in regex.find_iter(&content) {
+                if cli
+                    .ignore
+                    .clone()
+                    .into_iter()
+                    .any(|ignored| ignored == url.as_str())
+                {
+                    continue;
+                }
+
+                if cli.dry {
+                    println!("{}", url.as_str());
+                    continue;
+                }
+
                 let response = client
                     .get(url.as_str())
                     .send()
