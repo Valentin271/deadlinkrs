@@ -1,5 +1,7 @@
 use std::fs::read_to_string;
+use std::path::{Component, PathBuf};
 
+use ansi_term::Color::{Blue, Red};
 use globset::{GlobBuilder, GlobSetBuilder};
 use regex::Regex;
 use reqwest::blocking::Client;
@@ -55,28 +57,26 @@ fn main() {
                 Err(_) => continue,
             }
 
-            let filepath = if file.path().starts_with("./") {
-                file.path()
-                    .strip_prefix("./")
-                    .expect("./ prefix should be stripped")
-            } else if file.path().starts_with("../") {
-                file.path()
-                    .strip_prefix("../")
-                    .expect("../ prefix should be stripped")
-            } else {
-                file.path()
-            };
+            let filepath = file
+                .path()
+                .components()
+                .filter_map(|comp| match comp {
+                    Component::CurDir | Component::ParentDir => None,
+                    _ => Some(comp),
+                })
+                .collect::<PathBuf>();
 
-            if !globs.is_match(filepath) {
+            if !globs.is_match(&filepath) {
                 continue;
             }
 
-            if exclude_globs.is_match(filepath) {
+            if exclude_globs.is_match(&filepath) {
                 continue;
             }
+
+            println!("{}", file.path().display());
 
             if cli.list {
-                println!("{}", file.path().display());
                 continue;
             }
 
@@ -84,8 +84,6 @@ fn main() {
                 Ok(content) => content,
                 Err(_) => continue,
             };
-
-            println!("{}", file.path().display());
 
             for url in regex.find_iter(&content) {
                 if cli
@@ -98,19 +96,30 @@ fn main() {
                 }
 
                 if cli.dry {
-                    println!("{}", url.as_str());
+                    println!("{}", Blue.paint(url.as_str()));
                     continue;
                 }
 
-                let response = client
-                    .get(url.as_str())
-                    .send()
-                    .expect("Request should get response");
+                let response = match client.get(url.as_str()).send() {
+                    Ok(r) => r,
+                    Err(_) => {
+                        println!(
+                            "{} {}",
+                            Red.paint("Too many redirections for"),
+                            Blue.paint(url.as_str())
+                        );
+                        continue;
+                    }
+                };
 
                 if response.status().is_success() {
-                    println!("URL {} is alive", url.as_str())
+                    println!("URL {} is alive", Blue.paint(url.as_str()))
                 } else {
-                    println!("URL {} is NOT alive: {}", url.as_str(), response.status());
+                    println!(
+                        "URL {} is NOT alive: {}",
+                        Blue.paint(url.as_str()),
+                        response.status()
+                    );
                 }
             }
         }
