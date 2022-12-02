@@ -1,8 +1,9 @@
 use std::fs::read_to_string;
 use std::process::ExitCode;
 
-use ansi_term::Color::{Blue, Red, Yellow};
+use ansi_term::Color::{Blue, Yellow};
 use globset::{GlobBuilder, GlobSetBuilder};
+use human_panic::setup_panic;
 use ignore::WalkBuilder;
 use regex::Regex;
 use reqwest::blocking::Client;
@@ -12,6 +13,8 @@ use cli::Cli;
 mod cli;
 
 fn main() -> ExitCode {
+    setup_panic!();
+
     let cli = Cli::new();
     let mut result = ExitCode::SUCCESS;
 
