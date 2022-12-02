@@ -53,6 +53,6 @@ jobs:
 
       - name: Publish release
         run: |
-          gh release create $RELEASE_TAG
-          --title "$RELEASE_TAG"
-          deadlinkrs-linux
+          gh release create $RELEASE_TAG \
+            --title "$RELEASE_TAG" \
+            deadlinkrs-linux
