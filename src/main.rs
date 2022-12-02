@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::process::ExitCode;
 
@@ -7,6 +8,7 @@ use human_panic::setup_panic;
 use ignore::WalkBuilder;
 use regex::Regex;
 use reqwest::blocking::Client;
+use reqwest::StatusCode;
 
 use cli::Cli;
 
@@ -16,6 +18,7 @@ fn main() -> ExitCode {
     setup_panic!();
 
     let cli = Cli::new();
+    let mut cache: HashMap<String, StatusCode> = HashMap::new();
     let mut result = ExitCode::SUCCESS;
 
     let mut builder = GlobSetBuilder::new();
@@ -101,6 +104,11 @@ fn main() -> ExitCode {
                     continue;
                 }
 
+                if cache.contains_key(url.as_str()) {
+                    println!("CACHE {} was alive", Blue.paint(url.as_str()));
+                    continue;
+                }
+
                 let response = match client.get(url.as_str()).send() {
                     Ok(r) => r,
                     Err(_) => {
@@ -112,6 +120,8 @@ fn main() -> ExitCode {
                         continue;
                     }
                 };
+
+                cache.insert(String::from(url.as_str()), response.status());
 
                 if response.status().is_success() {
                     println!("URL {} is alive", Blue.paint(url.as_str()));
