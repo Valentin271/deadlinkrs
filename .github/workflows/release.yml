@@ -52,10 +52,10 @@ jobs:
           name: deadlinkrs-linux
 
       - name: Set executable bit
-        run: chmod +x deadlinkrs-linux/deadlinkrs-linux
+        run: chmod +x deadlinkrs
 
       - name: Publish release
         run: |
           gh release create $RELEASE_TAG \
             --title "$RELEASE_TAG" \
-            deadlinkrs-linux/deadlinkrs-linux
+            deadlinkrs
