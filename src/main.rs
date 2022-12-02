@@ -1,6 +1,7 @@
 use std::fs::read_to_string;
+use std::process::ExitCode;
 
-use ansi_term::Color::{Blue, Red};
+use ansi_term::Color::{Blue, Red, Yellow};
 use globset::{GlobBuilder, GlobSetBuilder};
 use ignore::WalkBuilder;
 use regex::Regex;
@@ -10,8 +11,9 @@ use cli::Cli;
 
 mod cli;
 
-fn main() {
+fn main() -> ExitCode {
     let cli = Cli::new();
+    let mut result = ExitCode::SUCCESS;
 
     let mut builder = GlobSetBuilder::new();
     let mut exclude_builder = GlobSetBuilder::new();
@@ -101,7 +103,7 @@ fn main() {
                     Err(_) => {
                         println!(
                             "{} {}",
-                            Red.paint("Too many redirections for"),
+                            Yellow.paint("Too many redirections for"),
                             Blue.paint(url.as_str())
                         );
                         continue;
@@ -109,15 +111,18 @@ fn main() {
                 };
 
                 if response.status().is_success() {
-                    println!("URL {} is alive", Blue.paint(url.as_str()))
+                    println!("URL {} is alive", Blue.paint(url.as_str()));
                 } else {
                     println!(
                         "URL {} is NOT alive: {}",
                         Blue.paint(url.as_str()),
                         response.status()
                     );
+                    result = ExitCode::FAILURE;
                 }
             }
         }
     }
+
+    result
 }
