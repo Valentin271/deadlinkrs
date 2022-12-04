@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::process::ExitCode;
 
-use ansi_term::Color::{Blue, Yellow};
+use ansi_term::Color::{Green, Red};
+use ansi_term::Style;
 use globset::{GlobBuilder, GlobSetBuilder};
 use human_panic::setup_panic;
 use ignore::WalkBuilder;
@@ -12,14 +13,17 @@ use reqwest::StatusCode;
 
 use cli::Cli;
 
+use crate::log::Link;
+
 mod cli;
+mod log;
 
 fn main() -> ExitCode {
     setup_panic!();
 
     let cli = Cli::new();
     let mut cache: HashMap<String, StatusCode> = HashMap::new();
-    let mut result = ExitCode::SUCCESS;
+    let mut dead_links: u32 = 0;
 
     let mut builder = GlobSetBuilder::new();
     let mut exclude_builder = GlobSetBuilder::new();
@@ -78,11 +82,17 @@ fn main() -> ExitCode {
                 continue;
             }
 
-            println!("{}", file.path().display());
-
             if cli.list {
+                println!("{}", file.path().display());
                 continue;
             }
+
+            println!(
+                "{}",
+                Style::new()
+                    .dimmed()
+                    .paint(file.path().display().to_string())
+            );
 
             let content = match read_to_string(file.path()) {
                 Ok(content) => content,
@@ -99,24 +109,22 @@ fn main() -> ExitCode {
                     continue;
                 }
 
+                let link = Link::new(url.as_str());
+
                 if cli.dry {
-                    println!("{}", Blue.paint(url.as_str()));
+                    link.print();
                     continue;
                 }
 
                 if cache.contains_key(url.as_str()) {
-                    println!("CACHE {} was alive", Blue.paint(url.as_str()));
+                    link.cache("");
                     continue;
                 }
 
                 let response = match client.get(url.as_str()).send() {
                     Ok(r) => r,
                     Err(_) => {
-                        println!(
-                            "{} {}",
-                            Yellow.paint("Too many redirections for"),
-                            Blue.paint(url.as_str())
-                        );
+                        link.warn("Too many redirections");
                         continue;
                     }
                 };
@@ -124,18 +132,21 @@ fn main() -> ExitCode {
                 cache.insert(String::from(url.as_str()), response.status());
 
                 if response.status().is_success() {
-                    println!("URL {} is alive", Blue.paint(url.as_str()));
+                    link.ok("");
                 } else {
-                    println!(
-                        "URL {} is NOT alive: {}",
-                        Blue.paint(url.as_str()),
-                        response.status()
-                    );
-                    result = ExitCode::FAILURE;
+                    link.err(format!("{}", response.status()).as_str());
+                    dead_links += 1;
                 }
             }
         }
     }
 
-    result
+    println!();
+    if dead_links > 0 {
+        println!("{}", Red.paint(format!("Found {} dead links", dead_links)));
+        ExitCode::FAILURE
+    } else {
+        println!("{}", Green.paint("No dead links !"));
+        ExitCode::SUCCESS
+    }
 }
