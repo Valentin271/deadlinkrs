@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fs::read_to_string;
 use std::process::ExitCode;
 
@@ -9,7 +9,6 @@ use human_panic::setup_panic;
 use ignore::WalkBuilder;
 use regex::Regex;
 use reqwest::blocking::Client;
-use reqwest::StatusCode;
 
 use cli::Cli;
 
@@ -22,7 +21,7 @@ fn main() -> ExitCode {
     setup_panic!();
 
     let cli = Cli::new();
-    let mut cache: HashMap<String, StatusCode> = HashMap::new();
+    let mut cache: HashSet<String> = HashSet::new();
     let mut dead_links: u32 = 0;
 
     let mut builder = GlobSetBuilder::new();
@@ -116,7 +115,7 @@ fn main() -> ExitCode {
                     continue;
                 }
 
-                if cache.contains_key(url.as_str()) {
+                if cache.contains(url.as_str()) {
                     link.cache("");
                     continue;
                 }
@@ -129,10 +128,9 @@ fn main() -> ExitCode {
                     }
                 };
 
-                cache.insert(String::from(url.as_str()), response.status());
-
                 if response.status().is_success() {
                     link.ok("");
+                    cache.insert(String::from(url.as_str()));
                 } else {
                     link.err(format!("{}", response.status()).as_str());
                     dead_links += 1;
