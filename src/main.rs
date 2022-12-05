@@ -139,12 +139,14 @@ fn main() -> ExitCode {
         }
     }
 
-    println!();
-    if dead_links > 0 {
-        println!("{}", Red.paint(format!("Found {} dead links", dead_links)));
-        ExitCode::FAILURE
-    } else {
-        println!("{}", Green.paint("No dead links !"));
+    if dead_links == 0 || cli.list || cli.dry {
+        println!("\n{}", Green.paint("No dead links !"));
         ExitCode::SUCCESS
+    } else {
+        println!(
+            "\n{}",
+            Red.paint(format!("Found {} dead links", dead_links))
+        );
+        ExitCode::FAILURE
     }
 }
