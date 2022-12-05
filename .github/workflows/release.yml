@@ -10,7 +10,8 @@ env:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    container: debian:9 # glibc 2.24
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -55,7 +56,7 @@ jobs:
           name: deadlinkrs-linux
 
       - name: Publish release
-        run: |
-          gh release create $RELEASE_TAG \
-            --title "$RELEASE_TAG" \
+        run: >
+          gh release create $RELEASE_TAG
+            --title "$RELEASE_TAG"
             deadlinkrs-linux
