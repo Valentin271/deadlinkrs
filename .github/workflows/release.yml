@@ -9,7 +9,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,10 +28,13 @@ jobs:
       - name: Build
         run: cargo build --verbose --release
 
+      - name: Rename
+        run: mv ./target/release/deadlinkrs ./target/release/deadlinkrs-linux
+
       - uses: actions/upload-artifact@v3
         with:
           name: deadlinkrs-linux
-          path: ./target/release/deadlinkrs
+          path: ./target/release/deadlinkrs-linux
           if-no-files-found: 'error'
 
   release:
@@ -51,11 +54,8 @@ jobs:
         with:
           name: deadlinkrs-linux
 
-      - name: Set executable bit
-        run: chmod +x deadlinkrs
-
       - name: Publish release
         run: |
           gh release create $RELEASE_TAG \
             --title "$RELEASE_TAG" \
-            deadlinkrs
+            deadlinkrs-linux
