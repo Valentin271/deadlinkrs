@@ -16,6 +16,9 @@ jobs:
     runs-on: ubuntu-20.04
     container: debian:9 # glibc 2.24
     steps:
+      - name: Deps
+        run: apt update && apt install -y curl
+
       - name: Checkout
         uses: actions/checkout@v3
 
