@@ -139,7 +139,11 @@ fn main() -> ExitCode {
         }
     }
 
-    if dead_links == 0 || cli.list || cli.dry {
+    if cli.list || cli.dry {
+        return ExitCode::SUCCESS;
+    }
+
+    if dead_links == 0 {
         println!("\n{}", Green.paint("No dead links !"));
         ExitCode::SUCCESS
     } else {
