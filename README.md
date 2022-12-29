@@ -13,7 +13,7 @@ Search for dead links in any kind of file.
 
 I wanted a tool that matched these criteria (or get as close as possible) :
 
-- Easy to download for CI, wathever the CI tool (GitHub, GitLab ...).  
+- Easy to download for CI, whatever the CI tool (GitHub, GitLab ...).  
   So no `cargo install`, `npm install`, `gem install` or anything language related (apt would have been fine)
 - An executable  
   No `.py` or whatever language that require an interpreter, I wanted something that run natively
@@ -33,7 +33,7 @@ Then I decided to write my own.
 I like high performance languages like C, but I also know that
 parsing user input, selecting files with globs, parsing files with REGEX, and sending http request
 isn't exactly easy.  
-Definetly could be done, but not easy and it would take some time.
+Definitely could be done, but not easy and it would take some time.
 
 So I wanted speed with Javascript / Python like high level utilities more or less out of the box.  
 What better choice than **Rust**.

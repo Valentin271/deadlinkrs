@@ -1,18 +1,30 @@
-use crate::files::links::link::Link;
+//! This module contains cli arguments handling
+
 use clap::{arg, command, ArgMatches};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 
+use crate::files::links::link::Link;
+
+/// Represents the arguments given to the cli
 pub struct Cli {
+    /// Paths to recursively search
     pub path: Vec<String>,
+    /// Set of globs to validate files
     pub glob: GlobSet,
+    /// Set of globs to exclude files
     pub exclude: GlobSet,
+    /// Links to ignore checking
     pub ignore: Vec<Link>,
+    /// Hidden files and directories are processed
     pub hidden: bool,
+    /// Only list files that would be processed
     pub list: bool,
+    /// Only list links that would be checked
     pub dry: bool,
 }
 
 impl Cli {
+    /// Creates a new cli arguments wrapper ready to use.
     pub fn new() -> Self {
         let matches: ArgMatches = command!()
             .arg(arg!([path]... "Path to look for files").default_value("."))

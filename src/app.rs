@@ -1,3 +1,5 @@
+//! Entry point module, contains the root application
+
 use std::process::ExitCode;
 
 use ansi_term::Color::{Green, Red};
@@ -6,7 +8,9 @@ use crate::cli::Cli;
 use crate::files::links::link::LinkStatus;
 use crate::files::Files;
 
+/// Represents the application
 pub struct App {
+    /// The arguments given to the cli
     cli: Cli,
 }
 
@@ -16,7 +20,7 @@ impl App {
         Self { cli: Cli::new() }
     }
 
-    /// Launches the app
+    /// Launches the app according to cli arguments
     pub fn run(&mut self) -> ExitCode {
         if self.cli.dry {
             self.dry()
@@ -27,7 +31,7 @@ impl App {
         }
     }
 
-    /// Checks for dead links
+    /// Checks for dead links. Fails if at least one link is considered dead.
     pub fn check(&mut self) -> ExitCode {
         let results = Files::new().check(&self.cli);
 
@@ -45,13 +49,13 @@ impl App {
         }
     }
 
-    /// List files that would be searched
+    /// List files that would be searched. Always succeeds.
     pub fn list(&self) -> ExitCode {
         Files::list(&self.cli);
         ExitCode::SUCCESS
     }
 
-    /// List links that would be checked
+    /// List links that would be checked. Always succeeds.
     pub fn dry(&self) -> ExitCode {
         Files::dry(&self.cli);
         ExitCode::SUCCESS

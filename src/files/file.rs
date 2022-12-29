@@ -1,3 +1,5 @@
+//! The file module groups everything related to a single file
+
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
@@ -9,18 +11,23 @@ use crate::files::links::results::Results;
 
 use super::links::Links;
 
-/// Respresents a file with possible links
+/// Represents a file with possible links
 pub struct File {
+    /// Relative path to the file
     path: PathBuf,
 }
 
 impl File {
+    /// Creates a new file form its path
     pub fn new(path: &Path) -> Self {
         Self {
             path: path.to_path_buf(),
         }
     }
 
+    /// Check all the links in this file (if there are).
+    ///
+    /// Then print and return the results.
     pub fn check(&self, cli: &Cli, cache: &mut Cache) -> Results {
         let results = Links::check(&self.path, cli, cache);
 
@@ -31,7 +38,7 @@ impl File {
 
     /// Prints the links found in this file
     pub fn print_links(&self, cli: &Cli) {
-        for link in Links::find(&self.path) {
+        for link in Links::find(&self.path).unwrap_or_default() {
             if !cli.ignore.contains(&link) {
                 println!("\t{}", link);
             }
