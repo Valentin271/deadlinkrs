@@ -1,10 +1,12 @@
+use crate::files::links::link::Link;
 use clap::{arg, command, ArgMatches};
+use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 
 pub struct Cli {
     pub path: Vec<String>,
-    pub glob: Vec<String>,
-    pub exclude: Vec<String>,
-    pub ignore: Vec<String>,
+    pub glob: GlobSet,
+    pub exclude: GlobSet,
+    pub ignore: Vec<Link>,
     pub hidden: bool,
     pub list: bool,
     pub dry: bool,
@@ -28,24 +30,53 @@ impl Cli {
                 .expect("path arguments should be valid")
                 .map(String::from)
                 .collect(),
-            glob: matches
-                .get_many::<String>("glob")
-                .expect("glob arguments should be valid")
-                .map(String::from)
-                .collect(),
-            exclude: matches
-                .get_many::<String>("exclude")
-                .unwrap_or_default()
-                .map(String::from)
-                .collect(),
+            glob: Cli::globs(
+                matches
+                    .get_many::<String>("glob")
+                    .expect("glob arguments should be valid"),
+            ),
+            exclude: Cli::exclude_globs(matches.get_many::<String>("exclude").unwrap_or_default()),
             ignore: matches
                 .get_many::<String>("ignore")
                 .unwrap_or_default()
-                .map(String::from)
+                .map(Link::new)
                 .collect(),
             hidden: matches.get_flag("hidden"),
             list: matches.get_flag("list"),
             dry: matches.get_flag("dry"),
         }
+    }
+
+    /// Build the set of globs to test the files against
+    fn globs<'a>(globs: impl Iterator<Item = &'a String>) -> GlobSet {
+        let mut builder = GlobSetBuilder::new();
+
+        for glob in globs {
+            builder.add(
+                GlobBuilder::new(glob.as_str())
+                    .literal_separator(true)
+                    .build()
+                    .expect("Glob pattern should be correct"),
+            );
+        }
+
+        builder.build().expect("Glob patterns should be correct")
+    }
+
+    /// Build the set of globs to exclude files
+    pub fn exclude_globs<'a>(globs: impl Iterator<Item = &'a String>) -> GlobSet {
+        let mut exclude_builder = GlobSetBuilder::new();
+
+        for glob in globs {
+            exclude_builder.add(
+                GlobBuilder::new(glob.as_str())
+                    .literal_separator(true)
+                    .build()
+                    .expect("Exclude glob pattern should be correct"),
+            );
+        }
+        exclude_builder
+            .build()
+            .expect("Exclude glob patterns should be correct")
     }
 }

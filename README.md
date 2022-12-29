@@ -1,8 +1,11 @@
 # deadlinkrs
 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Valentin271/deadlinkrs?label=Latest%20release)
 [![CI](https://github.com/Valentin271/deadlinkrs/actions/workflows/ci.yml/badge.svg)](https://github.com/Valentin271/deadlinkrs/actions/workflows/ci.yml)
 
 Search for dead links in any kind of file.
+
+# Documentation
 
 # Why
 
@@ -22,13 +25,13 @@ I wanted a tool that matched these criteria (or get as close as possible) :
 - Quick if possible
 
 To sum up, something easy to install configure and use, suitable for automation locally or in CI.  
-At the time, **I found** (maybe it existed but I didn't find it) nothing that would quite suit me needs.
+At the time, **I found** nothing (maybe it existed but I didn't find it) that would quite suit my needs.
 
 ## Why Rust
 
 Then I decided to write my own.  
 I like high performance languages like C, but I also know that
-parsing user input, selecting files with globs, parsing files with regex, and sending http request
+parsing user input, selecting files with globs, parsing files with REGEX, and sending http request
 isn't exactly easy.  
 Definetly could be done, but not easy and it would take some time.
 
