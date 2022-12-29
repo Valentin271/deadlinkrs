@@ -29,6 +29,9 @@ jobs:
       - name: Unit tests
         run: cargo test --verbose
 
+      - name: Documentation
+        run: cargo doc --verbose
+
       - name: Build
         run: cargo build --verbose --release
 
