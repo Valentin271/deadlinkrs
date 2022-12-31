@@ -31,3 +31,54 @@ impl Cache {
         self.data.insert(link.to_string());
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn link() -> Link {
+        Link::new(&"https://example.com".to_string())
+    }
+
+    #[test]
+    fn new() {
+        let cache = Cache::new();
+
+        assert_eq!(cache.data.len(), 0);
+    }
+
+    #[test]
+    fn inserts() {
+        let mut cache = Cache::new();
+
+        cache.inserts(&link());
+
+        assert_eq!(cache.data.len(), 1);
+    }
+
+    #[test]
+    fn not_contain_when_new() {
+        let cache = Cache::new();
+
+        assert!(!cache.contains(&Link::new(&"".to_string())));
+        assert!(!cache.contains(&link()));
+    }
+
+    #[test]
+    fn contains_after_inserted() {
+        let mut cache = Cache::new();
+
+        cache.inserts(&link());
+
+        assert!(cache.contains(&link()));
+    }
+
+    #[test]
+    fn not_contains_different_link() {
+        let mut cache = Cache::new();
+
+        cache.inserts(&link());
+
+        assert!(!cache.contains(&Link::new(&"".to_string())));
+    }
+}

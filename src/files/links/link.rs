@@ -10,7 +10,7 @@ use regex::Match;
 use reqwest::blocking::Client;
 
 /// Represents the status of a link in the process
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum LinkStatus {
     /// The link is alive (returned 2xx)
     Alive,
@@ -29,7 +29,7 @@ pub enum LinkStatus {
 }
 
 /// Represents a single link that can be checked or formatted
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Link {
     #[doc(hidden)]
     link: String,

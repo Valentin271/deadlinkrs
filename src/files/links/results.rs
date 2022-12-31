@@ -72,3 +72,76 @@ impl Display for Results {
         write!(f, "{}", s)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new() {
+        let results = Results::new();
+
+        assert_eq!(results.keys.len(), 0);
+        assert_eq!(results.values.len(), 0);
+    }
+
+    #[test]
+    fn inserts() {
+        let mut results = Results::new();
+        let link = Link::new(&"https://example.com".to_string());
+
+        results.inserts(&link, Alive);
+
+        assert_eq!(results.keys.len(), 1);
+        assert_eq!(results.values.len(), 1);
+
+        assert_eq!(results.keys.first().unwrap(), &link);
+        assert_eq!(results.values.first().unwrap(), &Alive);
+    }
+
+    #[test]
+    fn merge() {
+        // Creating results
+        let mut results1 = Results::new();
+        let mut results2 = Results::new();
+
+        let link = Link::new(&"https://example.com".to_string());
+        let link2 = Link::new(&"https://example.com/2".to_string());
+
+        results1.inserts(&link, Alive);
+        results2.inserts(&link2, Ignored);
+
+        // Merge
+        results1.merge(results2);
+
+        // Check len
+        assert_eq!(results1.keys.len(), 2);
+        assert_eq!(results1.values.len(), 2);
+
+        // Check added values
+        assert!(results1.keys.contains(&link2));
+        assert!(results1.values.contains(&Ignored));
+    }
+
+    #[test]
+    fn count_with() {
+        let mut results = Results::new();
+        let link = Link::new(&"https://example.com".to_string());
+
+        results.inserts(&link, Alive);
+
+        assert_eq!(results.count_with(Alive), 1);
+        assert_eq!(results.count_with(Ignored), 0);
+    }
+
+    #[test]
+    /// Enum value should not matter
+    fn count_with_enum_value() {
+        let mut results = Results::new();
+        let link = Link::new(&"https://example.com".to_string());
+
+        results.inserts(&link, Warn("Too many redirection".to_string()));
+
+        assert_eq!(results.count_with(Warn("".to_string())), 1);
+    }
+}
