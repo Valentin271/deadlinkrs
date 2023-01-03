@@ -12,7 +12,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-20.04
     container: debian:9 # glibc 2.24
     steps:
@@ -26,14 +26,16 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          default: true
           target: x86_64-unknown-linux-gnu
           profile: minimal
+          components: clippy
 
-      - name: Build
-        run: cargo build --verbose
+      - name: Lint
+        run: cargo clippy
 
-      - name: Unit tests
-        run: cargo test --verbose
+      - name: Testing
+        run: cargo test
 
       - name: Documentation
-        run: cargo doc --verbose
+        run: cargo doc
