@@ -13,6 +13,12 @@ pub struct Cache {
     data: HashSet<String>,
 }
 
+impl Default for Cache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Cache {
     /// Creates a new empty cache
     pub fn new() -> Self {

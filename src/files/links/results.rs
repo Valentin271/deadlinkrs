@@ -16,6 +16,12 @@ pub struct Results {
     values: Vec<LinkStatus>,
 }
 
+impl Default for Results {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Results {
     /// Creates a new empty results set.
     pub fn new() -> Self {

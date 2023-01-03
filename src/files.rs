@@ -8,13 +8,19 @@ use crate::files::file::File;
 use crate::files::links::cache::Cache;
 use crate::files::links::results::Results;
 
-mod file;
+pub mod file;
 pub mod links;
 
 /// Represents a list of files with a link cache.
 pub struct Files {
     /// Checked links cache
     cache: Cache,
+}
+
+impl Default for Files {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Files {
@@ -26,7 +32,7 @@ impl Files {
     }
 
     /// Find files matching the globs and the cli arguments
-    fn find<'a, 'b>(cli: &'a Cli) -> impl Iterator<Item = File> + 'b
+    pub fn find<'a, 'b>(cli: &'a Cli) -> impl Iterator<Item = File> + 'b
     where
         'a: 'b,
     {
@@ -60,22 +66,5 @@ impl Files {
         }
 
         results
-    }
-
-    /// Prints the files matched by [`Files::find`]
-    pub fn list(cli: &Cli) {
-        for file in Files::find(cli) {
-            println!("{}", file);
-        }
-    }
-
-    /// Prints the links that would be checked.
-    ///
-    /// Exactly like [`Files::check`] but do not make a request to check validity.
-    pub fn dry(cli: &Cli) {
-        for file in Files::find(cli) {
-            println!("{}", file);
-            file.print_links(cli);
-        }
     }
 }

@@ -12,6 +12,7 @@ use crate::files::links::results::Results;
 use super::links::Links;
 
 /// Represents a file with possible links
+#[derive(PartialEq, Eq, Debug, PartialOrd, Ord)]
 pub struct File {
     /// Relative path to the file
     path: PathBuf,

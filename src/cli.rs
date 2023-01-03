@@ -23,9 +23,23 @@ pub struct Cli {
     pub dry: bool,
 }
 
+impl Default for Cli {
+    fn default() -> Self {
+        Self {
+            path: vec![String::from(".")],
+            glob: Self::globs(vec![String::from("**")].iter()),
+            exclude: GlobSet::default(),
+            ignore: Vec::new(),
+            hidden: false,
+            list: false,
+            dry: false,
+        }
+    }
+}
+
 impl Cli {
     /// Creates a new cli arguments wrapper ready to use.
-    pub fn new() -> Self {
+    pub fn build() -> Self {
         let matches: ArgMatches = command!()
             .arg(arg!([path]... "Path to look for files").default_value("."))
             .arg(arg!(-g --glob <glob>... "Unix-style glob to filter files").default_value("**"))
@@ -76,7 +90,7 @@ impl Cli {
     }
 
     /// Build the set of globs to exclude files
-    pub fn exclude_globs<'a>(globs: impl Iterator<Item = &'a String>) -> GlobSet {
+    fn exclude_globs<'a>(globs: impl Iterator<Item = &'a String>) -> GlobSet {
         let mut exclude_builder = GlobSetBuilder::new();
 
         for glob in globs {
